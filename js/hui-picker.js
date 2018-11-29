@@ -6,6 +6,7 @@ hui 选择器组件
 var HUI_PickerTimer = null, HUI_PickerId = 1;
 function huiPickerHide(id){hui('.hui-picker').hide();}
 function huiPicker(selector, callBack){
+	//初始化
 	this.pickerBtn    = hui(selector);
 	this.pickerId     = 'HUI_PickerMain' + HUI_PickerId;
 	this.relevance    = true; 
@@ -20,14 +21,20 @@ function huiPicker(selector, callBack){
 '<div class="hui-picker-line"></div>';
 	document.body.appendChild(huiPickerMain);
 	this.pickerMain   = hui('#'+this.pickerId);
-	this.listAll      = null; this.level = 1; var thisObj = this;
+	this.listAll      = null; 
+	this.level        = 1; 
+	var thisObj       = this;
 	hui('#HUI_PickerConfirm'+HUI_PickerId).click(function(){
 		huiPickerHide(thisObj.pickerId);
 		if(callBack){callBack();}
 	});
 	HUI_PickerId++;
-	this.pickerBtn.click(function(){hui('.hui-picker').hide(); thisObj.pickerMain.show();});
-	this.bindData = function(index, data){
+	this.pickerBtn.click(function(){
+		hui('.hui-picker').hide(); 
+		thisObj.pickerMain.show();
+	});
+	//绑定数据
+	this.bindData = function(index, data, defaultVal){
 		this.relevance = false;
 		var lists = this.pickerMain.find('.hui-picker-list');
 		if(lists.length < 1){
@@ -40,17 +47,26 @@ function huiPicker(selector, callBack){
 		}
 		this.listAll = this.pickerMain.find('.hui-picker-list');
 		var html = '';
-		for(var ii = 0; ii < data.length; ii++){html += '<div pickVal="'+data[ii].value+'">'+data[ii].text+'</div>';}
+		//调整默认值
+		if(defaultVal){
+			var defaultItems = data.splice(defaultVal, 1);
+			if(defaultItems.length > 0){data.unshift(defaultItems[0]);}
+		}
+		for(var ii = 0; ii < data.length; ii++){
+			html += '<div pickVal="'+data[ii].value+'">'+data[ii].text+'</div>';
+		}
 		this.listAll.eq(index).html('<div style="height:96px;"><input type="hidden" value="0" /></div>' + html + '<div style="height:66px;"></div>');
 		this.listAll.eq(index).dom[0].addEventListener('scroll', this.scrollFun);
+		
 		//默认第一个被选中
-		this.listAll.eq(index).find('div').eq(1).css({color:'#636363', 'fontSize':'14px'});
-		if(typeof(data[0]) != 'undefined'){
-			this.listAll.eq(index).attr('huisevalue', data[0].value);
-			this.listAll.eq(index).attr('huisetext', data[0].text);
+		this.listAll.eq(index).find('div').eq(0).css({color:'#636363', 'fontSize':'14px'});
+		if(typeof(data[defaultVal - 1]) != 'undefined'){
+			this.listAll.eq(index).attr('huisevalue', data[defaultVal - 1].value);
+			this.listAll.eq(index).attr('huisetext', data[defaultVal - 1].text);
 		}
+		
 	}
-	this.bindRelevanceData = function(data){
+	this.bindRelevanceData = function(data, defaultVal){
 		this.dataSave = data;
 		//加载选项列表
 		var lists = this.pickerMain.find('.hui-picker-list');
@@ -64,14 +80,33 @@ function huiPicker(selector, callBack){
 		}
 		this.listAll = this.pickerMain.find('.hui-picker-list');
 		//循环设置选项
-		var newData = data;
+		var newData;
 		for(var i = 0; i < this.level; i++){
+			//子选项
 			if(i >= 1){
-				if(newData[0].children){newData = newData[0].children;}else{newData = new Array();}
+				if(newData[0].children){
+					newData = newData[0].children;
+				}else{
+					newData = new Array();
+				}
+			}else{
+				newData = data;
+			}
+			//设置默认值
+			if(defaultVal){
+				//计算索引
+				var parentIndex = newData.pickerIndexOf(defaultVal[i]);
+				if(parentIndex != -1){
+					var defaultItems = newData.splice(parentIndex, 1);
+					if(defaultItems.length > 0){newData.unshift(defaultItems[0]);}
+					console.log(parentIndex);
+				}
 			}
 			this.listAll.eq(i).html('');
 			var html = '';
-			for(var ii = 0; ii < newData.length; ii++){html += '<div pickVal="'+newData[ii].value+'">'+newData[ii].text+'</div>';}
+			for(var ii = 0; ii < newData.length; ii++){
+				html += '<div pickVal="'+newData[ii].value+'">'+newData[ii].text+'</div>';
+			}
 			this.listAll.eq(i).html('<div style="height:96px;"><input type="hidden" value="0" /></div>' + html + '<div style="height:66px;"></div>');
 			this.listAll.eq(i).dom[0].addEventListener('scroll', this.scrollFun);
 			//默认第一个被选中
@@ -82,6 +117,7 @@ function huiPicker(selector, callBack){
 			}
 		}
 	}
+	
 	this.scrollFun = function(){
 		if(HUI_PickerTimer != null){clearTimeout(HUI_PickerTimer);}
 		var scTop = this.scrollTop, scObj = this;
@@ -143,3 +179,10 @@ function huiPicker(selector, callBack){
 		return this.pickerMain.find('.hui-picker-list').eq(index).attr('huisetext');
 	}
 }
+//查找数组元素，返回索引 用于查询、设置默认值
+Array.prototype.pickerIndexOf = function (val) {
+    for (var i = 0; i < this.length; i++) {
+        if (this[i].value == val) return i;
+    }
+    return -1;
+};
