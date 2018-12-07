@@ -102,7 +102,7 @@ function huiFormCheckBase(obj){
 			if(!reg.test(checkVal)){return huiFormCheckShowErrMsg(checkMsg);}
 		break;
 		case 'phone' :
-			var reg = /^13[0-9]{9}$|14[0-9]{9}|15[0-9]{9}$|18[0-9]{9}$/;
+			var reg = /^1[0-9]{10}$/;
 			if(!reg.test(checkVal)){return huiFormCheckShowErrMsg(checkMsg);}
 		break;
 		case 'url'  :
