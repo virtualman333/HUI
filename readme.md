@@ -4,5 +4,4 @@
 手册及官网 : <br />
 [http://www.hcoder.net/hui](http://www.hcoder.net/hui "http://www.hcoder.net/hui")<br /><br />
 
-## HUI - 官方交流群
-QQ群 : ⑥群 942869615 
+## 基于HUI进行改进的YTUWUI
